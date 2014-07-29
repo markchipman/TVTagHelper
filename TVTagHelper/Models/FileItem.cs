@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TVTagHelper
+namespace TVTagHelper.Models
 {
-    public class FileList
+    public class FileItem
     {
         public string Title { get; set; }
         public int Completion { get; set; }

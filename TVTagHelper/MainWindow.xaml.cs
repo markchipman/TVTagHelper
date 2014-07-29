@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using iTunesSearch.Library;
 using iTunesSearch.Library.Models;
+using TVTagHelper.Models;
 
 namespace TVTagHelper
 {
@@ -23,16 +17,16 @@ namespace TVTagHelper
     /// </summary>
     public partial class MainWindow : Window
     {
-        ObservableCollection<FileList> fileItems = new ObservableCollection<FileList>();
+        ObservableCollection<FileItem> fileItems = new ObservableCollection<FileItem>();
         ObservableCollection<TVShowSeachResult> tvShows = new ObservableCollection<TVShowSeachResult>();
         iTunesSearchManager iTunes = new iTunesSearchManager();
 
         public MainWindow()
         {
             InitializeComponent();
-            fileItems.Add(new FileList() { Title = "Complete this WPF tutorial", Completion = 45 });
-            fileItems.Add(new FileList() { Title = "Learn C#", Completion = 80 });
-            fileItems.Add(new FileList() { Title = "Wash the car", Completion = 0 });
+            fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial", Completion = 45 });
+            fileItems.Add(new FileItem() { Title = "Learn C#", Completion = 80 });
+            fileItems.Add(new FileItem() { Title = "Wash the car", Completion = 0 });
 
             List<EpisodeInfo> epItems = new List<EpisodeInfo>();
             epItems.Add(new EpisodeInfo() { EpisodeNumber = 1, Name = "Episode 1", Description = "Description 1" });
@@ -54,9 +48,46 @@ namespace TVTagHelper
             Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text);
             searchTask.ContinueWith((t) =>
             {
-                //  Update UI here
+                //  Clear our tvshows observable:
+                tvShows.Clear();
+
+                //  Get the results
                 var results = t.Result;
-                bool haveResults = results.Episodes.Any();
+
+                //  Group into seasons
+                var seasons = from episode in results.Episodes
+                              orderby episode.Number
+                              group episode by episode.SeasonNumber into seasonGroup
+                              orderby seasonGroup.Key
+                              select seasonGroup;
+
+                //  Create our structure:
+                foreach(var seasonGroup in seasons)
+                {
+                    //  Create the show result
+                    TVShowSeachResult tvResult = new TVShowSeachResult()
+                    {
+                        SeasonNumber = seasonGroup.Key
+                    };
+
+                    //  Add the episodes
+                    foreach(TVEpisode episode in seasonGroup)
+                    {
+                        tvResult.Episodes.Add(new EpisodeInfo()
+                            {
+                                Name = episode.Name,
+                                Description = episode.DescriptionShort,
+                                EpisodeNumber = episode.Number
+                            });
+
+                        //  There has to be a better way to do this:
+                        tvResult.ArtworkUrl = episode.ArtworkUrl;
+                        tvResult.ShowName = episode.ShowName;
+                    }
+
+                    //  Add the result to the list:
+                    tvShows.Add(tvResult);
+                }
             },
             TaskScheduler.FromCurrentSynchronizationContext());
         }
@@ -90,7 +121,7 @@ namespace TVTagHelper
 
             //  We need to check for the correct data format.  We want to
             //  allow updating titles with episode title information (not file drops)
-            if(e.Data.GetDataPresent("TVTagHelper.EpisodeInfo", true))
+            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
             {
                 dropEnabled = true;
             }
@@ -106,7 +137,7 @@ namespace TVTagHelper
         {
             //  We need to check for the correct data format.  We want to
             //  allow updating titles with episode title information (not file drops)
-            if(e.Data.GetDataPresent("TVTagHelper.EpisodeInfo", true))
+            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
             {
                 var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
                 TextBlock text = (TextBlock)sender;
