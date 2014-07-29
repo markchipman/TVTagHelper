@@ -13,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using iTunesSearch.Library;
+using iTunesSearch.Library.Models;
 
 namespace TVTagHelper
 {
@@ -21,26 +23,27 @@ namespace TVTagHelper
     /// </summary>
     public partial class MainWindow : Window
     {
+        ObservableCollection<FileList> fileItems = new ObservableCollection<FileList>();
+        ObservableCollection<TVShowSeachResult> tvShows = new ObservableCollection<TVShowSeachResult>();
+        iTunesSearchManager iTunes = new iTunesSearchManager();
+
         public MainWindow()
         {
             InitializeComponent();
-
-            ObservableCollection<FileList> fileItems = new ObservableCollection<FileList>();
             fileItems.Add(new FileList() { Title = "Complete this WPF tutorial", Completion = 45 });
             fileItems.Add(new FileList() { Title = "Learn C#", Completion = 80 });
             fileItems.Add(new FileList() { Title = "Wash the car", Completion = 0 });
 
-            List<TVShowSeachResult> items = new List<TVShowSeachResult>();
             List<EpisodeInfo> epItems = new List<EpisodeInfo>();
             epItems.Add(new EpisodeInfo() { EpisodeNumber = 1, Name = "Episode 1", Description = "Description 1" });
             epItems.Add(new EpisodeInfo() { EpisodeNumber = 2, Name = "Episode 2", Description = "Description 2" });
             epItems.Add(new EpisodeInfo() { EpisodeNumber = 3, Name = "Episode 3", Description = "Description 3" });
-            items.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/67/db/24/mzl.avsbdzjp.100x100-75.jpg" });
-            items.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 2, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/17/cb/33/mzl.vnswhqyb.100x100-75.jpg" });
-            items.Add(new TVShowSeachResult() { ShowName = "Breaking Bad", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a3.mzstatic.com/us/r30/Features/fc/3c/14/dj.tkqxkglc.100x100-75.jpg" });
+            tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/67/db/24/mzl.avsbdzjp.100x100-75.jpg" });
+            tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 2, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/17/cb/33/mzl.vnswhqyb.100x100-75.jpg" });
+            tvShows.Add(new TVShowSeachResult() { ShowName = "Breaking Bad", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a3.mzstatic.com/us/r30/Features/fc/3c/14/dj.tkqxkglc.100x100-75.jpg" });
 
             fileList.ItemsSource = fileItems;
-            searchResults.ItemsSource = items;
+            searchResults.ItemsSource = tvShows;
         }
 
         private void cmdSearch_Click(object sender, RoutedEventArgs e)
@@ -48,6 +51,14 @@ namespace TVTagHelper
             //  Use this as a temporary check of fileList
             var test = fileList.ItemsSource;
 
+            Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text);
+            searchTask.ContinueWith((t) =>
+            {
+                //  Update UI here
+                var results = t.Result;
+                bool haveResults = results.Episodes.Any();
+            },
+            TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void dgEpisodes_MouseMove(object sender, MouseEventArgs e)
