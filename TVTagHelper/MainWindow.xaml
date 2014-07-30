@@ -16,7 +16,16 @@
         <!-- File drag/drop -->
         <StackPanel Grid.Column="0">
             <Label Margin="0,5,0,5">Drag your files here</Label>
-            <ListBox Name="fileList" HorizontalContentAlignment="Stretch">
+            <DataGrid Name="filesDataGrid" LoadingRow="filesDataGrid_LoadingRow" HorizontalAlignment="Stretch" AllowDrop="True" AutoGenerateColumns="False" SelectionMode="Single" BorderThickness="0" GridLinesVisibility="None">
+                <DataGrid.Columns>
+                    <DataGridTextColumn IsReadOnly="True" Header="File name" Binding="{Binding Path=Title}" />
+                    <DataGridTextColumn IsReadOnly="True" Header="Show name" Binding="{Binding Path=ShowName}" />
+                    <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            <!--
+            <ListBox Name="fileList" HorizontalContentAlignment="Stretch" AllowDrop="True" DragOver="fileList_DragOver" Drop="fileList_Drop">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Margin="0,2">
@@ -24,12 +33,13 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="100" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Name="txtFileTitle" Text="{Binding Title, Mode=TwoWay}" AllowDrop="True" DragOver="txtFileTitle_DragOver" Drop="txtFileTitle_Drop" />
+                            <TextBlock Name="txtFileTitle" Text="{Binding Title}" />
                             <ProgressBar Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Completion}" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            -->
         </StackPanel>
 
         <!-- Splitter control -->
@@ -72,7 +82,7 @@
                                         <DataGrid.Columns>
                                             <DataGridTextColumn IsReadOnly="True" Header="Ep #" Binding="{Binding Path=EpisodeNumber}" />
                                             <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Name}" />
-                                            <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Description}" />
+                                            <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
                                         </DataGrid.Columns>
                                     </DataGrid>
 

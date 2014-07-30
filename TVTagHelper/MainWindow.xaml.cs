@@ -36,15 +36,12 @@ namespace TVTagHelper
             tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 2, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/17/cb/33/mzl.vnswhqyb.100x100-75.jpg" });
             tvShows.Add(new TVShowSeachResult() { ShowName = "Breaking Bad", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a3.mzstatic.com/us/r30/Features/fc/3c/14/dj.tkqxkglc.100x100-75.jpg" });
 
-            fileList.ItemsSource = fileItems;
+            filesDataGrid.ItemsSource = fileItems;
             searchResults.ItemsSource = tvShows;
         }
 
         private void cmdSearch_Click(object sender, RoutedEventArgs e)
         {
-            //  Use this as a temporary check of fileList
-            var test = fileList.ItemsSource;
-
             Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text, 500);
             searchTask.ContinueWith((t) =>
             {
@@ -153,7 +150,51 @@ namespace TVTagHelper
 
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
-
+            //  Check status of fileItems
+            int test = fileItems.Count;
         }
+
+        private void filesDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            e.Row.DragOver += new DragEventHandler(fileRow_DragOver);
+            e.Row.Drop += new DragEventHandler(fileRow_Drop);
+        }
+
+        private void fileRow_DragOver(object sender, DragEventArgs e)
+        {
+            bool dropEnabled = false;
+
+            //  We need to check for the correct data format.  We want to
+            //  allow updating titles with episode title information (not file drops)
+            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
+            {
+                dropEnabled = true;
+
+                //  Select the item and scroll it into view:
+                DataGridRow r = (DataGridRow)sender;
+                filesDataGrid.SelectedItem = r.Item;
+                filesDataGrid.ScrollIntoView(r.Item);
+            }
+
+            if(!dropEnabled)
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+            }
+        }
+
+        private void fileRow_Drop(object sender, DragEventArgs e)
+        {
+            //  We need to check for the correct data format.  We want to
+            //  allow updating titles with episode title information (not file drops)
+            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
+            {
+                var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
+                FileItem file = (FileItem)filesDataGrid.SelectedItem;
+
+                
+            }
+        }
+
     }
 }
