@@ -43,13 +43,13 @@
             <StackPanel>
                 <DockPanel FocusManager.FocusedElement="{Binding ElementName=txtSearch}">
                     <Label Margin="0,5,0,5" DockPanel.Dock="Left">TV Show:</Label>
-                    <Button Name="cmdSearch" Margin="0,5,5,5" DockPanel.Dock="Right" IsDefault="True" Click="cmdSearch_Click">Search</Button>
+                    <Button Name="cmdSearch" Margin="0,5,5,5" Padding="5,0" DockPanel.Dock="Right" IsDefault="True" Click="cmdSearch_Click">Search</Button>
                     <TextBox Name="txtSearch" Margin="5,5,5,5"></TextBox>
                 </DockPanel>
-                <ItemsControl Name="searchResults" HorizontalContentAlignment="Stretch">
+                <ItemsControl Name="searchResults" HorizontalContentAlignment="Stretch" Margin="5">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,2">
+                            <Grid Margin="0,5">
                                 <Grid.RowDefinitions>
                                     <RowDefinition MinHeight="110"/>
                                 </Grid.RowDefinitions>
@@ -59,7 +59,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Top part of search results information, including artwork -->
-                                <Image Source="{Binding ArtworkUrl}" Width="100" Height="100"/>
+                                <Image Source="{Binding ArtworkUrl}" Width="100" Height="100" VerticalAlignment="Top"/>
                                 <StackPanel Grid.Column="1" Margin="5,0,5,0">
                                     <TextBlock Text="{Binding ShowName}" FontWeight="Bold" Grid.Column="1" />
                                     <StackPanel Orientation="Horizontal">
@@ -72,6 +72,7 @@
                                         <DataGrid.Columns>
                                             <DataGridTextColumn IsReadOnly="True" Header="Ep #" Binding="{Binding Path=EpisodeNumber}" />
                                             <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Name}" />
+                                            <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Description}" />
                                         </DataGrid.Columns>
                                     </DataGrid>
 
@@ -84,7 +85,7 @@
         </ScrollViewer>
 
         <StackPanel Grid.Row="1">
-            <Button Name="btnUpdate">Update tags</Button>
+            <Button Name="btnUpdate" Click="btnUpdate_Click" Width="100" HorizontalAlignment="Left">Update tags</Button>
         </StackPanel>
 
     </Grid>

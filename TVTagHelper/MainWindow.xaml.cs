@@ -45,7 +45,7 @@ namespace TVTagHelper
             //  Use this as a temporary check of fileList
             var test = fileList.ItemsSource;
 
-            Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text);
+            Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text, 500);
             searchTask.ContinueWith((t) =>
             {
                 //  Clear our tvshows observable:
@@ -64,29 +64,35 @@ namespace TVTagHelper
                 //  Create our structure:
                 foreach(var seasonGroup in seasons)
                 {
-                    //  Create the show result
-                    TVShowSeachResult tvResult = new TVShowSeachResult()
-                    {
-                        SeasonNumber = seasonGroup.Key
-                    };
+                    //  Filter our episodes:
+                    var filteredEpisodes = from episode in seasonGroup
+                                    where episode.PriceHD > 0
+                                    select episode;
 
-                    //  Add the episodes
-                    foreach(TVEpisode episode in seasonGroup)
+                    if(filteredEpisodes.Any())
                     {
-                        tvResult.Episodes.Add(new EpisodeInfo()
-                            {
-                                Name = episode.Name,
-                                Description = episode.DescriptionShort,
-                                EpisodeNumber = episode.Number
-                            });
+                        //  Create the show result
+                        TVShowSeachResult tvResult = new TVShowSeachResult()
+                        {
+                            SeasonNumber = seasonGroup.Key
+                        };
 
-                        //  There has to be a better way to do this:
-                        tvResult.ArtworkUrl = episode.ArtworkUrl;
-                        tvResult.ShowName = episode.ShowName;
+                        //  Add the episodes
+                        tvResult.Episodes = (from episode in filteredEpisodes
+                                             select new EpisodeInfo()
+                                             {
+                                                 Name = episode.Name,
+                                                 Description = episode.DescriptionShort,
+                                                 EpisodeNumber = episode.Number
+                                             }).ToList();
+
+                        //  Set the show properties
+                        tvResult.ArtworkUrl = filteredEpisodes.First().ArtworkUrl;
+                        tvResult.ShowName = filteredEpisodes.First().ShowName;
+
+                        //  Add the result to the list:
+                        tvShows.Add(tvResult);
                     }
-
-                    //  Add the result to the list:
-                    tvShows.Add(tvResult);
                 }
             },
             TaskScheduler.FromCurrentSynchronizationContext());
@@ -143,6 +149,11 @@ namespace TVTagHelper
                 TextBlock text = (TextBlock)sender;
                 text.Text = data.Name;
             }
+        }
+
+        private void btnUpdate_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
