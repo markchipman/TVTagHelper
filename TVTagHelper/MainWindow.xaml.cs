@@ -24,6 +24,8 @@ namespace TVTagHelper
         public MainWindow()
         {
             InitializeComponent();
+
+            /*
             fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial"});
             fileItems.Add(new FileItem() { Title = "Learn C#"});
             fileItems.Add(new FileItem() { Title = "Wash the car"});
@@ -35,6 +37,7 @@ namespace TVTagHelper
             tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/67/db/24/mzl.avsbdzjp.100x100-75.jpg" });
             tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 2, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/17/cb/33/mzl.vnswhqyb.100x100-75.jpg" });
             tvShows.Add(new TVShowSeachResult() { ShowName = "Breaking Bad", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a3.mzstatic.com/us/r30/Features/fc/3c/14/dj.tkqxkglc.100x100-75.jpg" });
+            */
 
             filesDataGrid.ItemsSource = fileItems;
             searchResults.ItemsSource = tvShows;

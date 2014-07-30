@@ -5,7 +5,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="25" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -36,7 +36,7 @@
             <StackPanel>
                 <DockPanel FocusManager.FocusedElement="{Binding ElementName=txtSearch}">
                     <Label Margin="0,5,0,5" DockPanel.Dock="Left">TV Show:</Label>
-                    <Button Name="cmdSearch" Margin="0,5,5,5" Padding="5,0" DockPanel.Dock="Right" IsDefault="True" Click="cmdSearch_Click">Search</Button>
+                    <Button Name="cmdSearch" Margin="0,5,5,5" Padding="10,0" DockPanel.Dock="Right" IsDefault="True" Click="cmdSearch_Click">Search</Button>
                     <TextBox Name="txtSearch" Margin="5,5,5,5"></TextBox>
                 </DockPanel>
                 <ItemsControl Name="searchResults" HorizontalContentAlignment="Stretch" Margin="5">
@@ -77,8 +77,8 @@
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="1">
-            <Button Name="btnUpdate" Click="btnUpdate_Click" Width="100" HorizontalAlignment="Left">Update tags</Button>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Background="LightGray">
+            <Button Name="btnUpdate" Click="btnUpdate_Click" HorizontalAlignment="Left" Margin="5" Padding="15,5">Update tags</Button>
         </StackPanel>
 
     </Grid>
