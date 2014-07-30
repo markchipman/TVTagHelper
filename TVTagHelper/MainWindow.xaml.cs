@@ -24,9 +24,9 @@ namespace TVTagHelper
         public MainWindow()
         {
             InitializeComponent();
-            fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial", Completion = 45 });
-            fileItems.Add(new FileItem() { Title = "Learn C#", Completion = 80 });
-            fileItems.Add(new FileItem() { Title = "Wash the car", Completion = 0 });
+            fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial"});
+            fileItems.Add(new FileItem() { Title = "Learn C#"});
+            fileItems.Add(new FileItem() { Title = "Wash the car"});
 
             List<EpisodeInfo> epItems = new List<EpisodeInfo>();
             epItems.Add(new EpisodeInfo() { EpisodeNumber = 1, Name = "Episode 1", Description = "Description 1" });
@@ -192,7 +192,16 @@ namespace TVTagHelper
                 var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
                 FileItem file = (FileItem)filesDataGrid.SelectedItem;
 
-                
+                var item = fileItems.FirstOrDefault(f => f.Id == file.Id);
+                if(item != null)
+                {
+                    item.Title = data.Name;
+                    item.Description = data.Description;
+                    item.EpisodeNumber = data.EpisodeNumber;
+                }
+
+                var oldindex = fileItems.IndexOf(item);
+                fileItems[oldindex] = item;
             }
         }
 
