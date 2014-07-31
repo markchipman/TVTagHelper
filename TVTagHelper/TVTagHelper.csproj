@@ -36,9 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="iTunesSearch.Library, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="iTunesSearch.Library, Version=1.0.11.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\iTunesSearch.1.0.6.0\lib\net45\iTunesSearch.Library.dll</HintPath>
+      <HintPath>..\packages\iTunesSearch.1.0.11.0\lib\net45\iTunesSearch.Library.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>

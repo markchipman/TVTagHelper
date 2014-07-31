@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -20,7 +21,16 @@ namespace TVTagHelper
     {
         ObservableCollection<FileItem> fileItems = new ObservableCollection<FileItem>();
         ObservableCollection<TVShowSeachResult> tvShows = new ObservableCollection<TVShowSeachResult>();
+        
+        /// <summary>
+        /// The iTunes search manager
+        /// </summary>
         iTunesSearchManager iTunes = new iTunesSearchManager();
+
+        /// <summary>
+        /// The large artwork url cache (based on seasonId)
+        /// </summary>
+        private ConcurrentDictionary<long, string> seasonArtworkCache = new ConcurrentDictionary<long, string>();
 
         public MainWindow()
         {
@@ -30,14 +40,6 @@ namespace TVTagHelper
             fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial"});
             fileItems.Add(new FileItem() { Title = "Learn C#"});
             fileItems.Add(new FileItem() { Title = "Wash the car"});
-
-            List<EpisodeInfo> epItems = new List<EpisodeInfo>();
-            epItems.Add(new EpisodeInfo() { EpisodeNumber = 1, Name = "Episode 1", Description = "Description 1" });
-            epItems.Add(new EpisodeInfo() { EpisodeNumber = 2, Name = "Episode 2", Description = "Description 2" });
-            epItems.Add(new EpisodeInfo() { EpisodeNumber = 3, Name = "Episode 3", Description = "Description 3" });
-            tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/67/db/24/mzl.avsbdzjp.100x100-75.jpg" });
-            tvShows.Add(new TVShowSeachResult() { ShowName = "Modern family", SeasonNumber = 2, Episodes = epItems, ArtworkUrl = "http://a4.mzstatic.com/us/r30/Video/17/cb/33/mzl.vnswhqyb.100x100-75.jpg" });
-            tvShows.Add(new TVShowSeachResult() { ShowName = "Breaking Bad", SeasonNumber = 1, Episodes = epItems, ArtworkUrl = "http://a3.mzstatic.com/us/r30/Features/fc/3c/14/dj.tkqxkglc.100x100-75.jpg" });
             */
 
             filesDataGrid.ItemsSource = fileItems;
@@ -46,7 +48,9 @@ namespace TVTagHelper
 
         private void cmdSearch_Click(object sender, RoutedEventArgs e)
         {
-            Task<TVEpisodeListResult> searchTask = iTunes.GetEpisodesForShow(txtSearch.Text, 500);
+            cmdSearch.IsEnabled = false;
+            
+            Task<TVEpisodeListResult> searchTask = iTunes.GetTVEpisodesForShow(txtSearch.Text, 500);
             searchTask.ContinueWith((t) =>
             {
                 //  Clear our tvshows observable:
@@ -93,6 +97,7 @@ namespace TVTagHelper
                                              {
                                                  Name = item.Episode.Name,
                                                  Description = item.Episode.DescriptionShort,
+                                                 ShowId = item.Episode.ShowId,
                                                  EpisodeNumber = item.OrdinalPosition,
                                                  RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
                                              }).ToList();
@@ -105,8 +110,41 @@ namespace TVTagHelper
                         tvShows.Add(tvResult);
                     }
                 }
+
+                cmdSearch.IsEnabled = true;
             },
             TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        /// <summary>
+        /// Gets the large artwork url for a given show
+        /// </summary>
+        /// <param name="seasonId"></param>
+        /// <returns></returns>
+        private string GetLargeArtworkForSeasonId(long seasonId)
+        {
+            string retval = string.Empty;
+
+            //  If we don't have it in cache, get it in cache
+            if(!seasonArtworkCache.ContainsKey(seasonId))
+            {
+                Task<TVSeasonListResult> lookupTask = iTunes.GetTVSeasonById(seasonId);
+                lookupTask.ContinueWith((t) =>
+                {
+                    //  If we got results back...
+                    if(t.Result.Seasons.Any())
+                    {
+                        string artworkUrl = t.Result.Seasons.First().ArtworkUrlLarge;
+                        seasonArtworkCache.AddOrUpdate(seasonId, artworkUrl, (key, oldValue) => artworkUrl );
+                    }
+                }, 
+                TaskScheduler.FromCurrentSynchronizationContext());
+            }
+
+            //  Return it from cache:
+            retval = seasonArtworkCache[seasonId];
+
+            return retval;
         }
 
         private void dgEpisodes_MouseMove(object sender, MouseEventArgs e)
@@ -132,36 +170,6 @@ namespace TVTagHelper
             }
         }
 
-        private void txtFileTitle_DragOver(object sender, DragEventArgs e)
-        {
-            bool dropEnabled = false;
-
-            //  We need to check for the correct data format.  We want to
-            //  allow updating titles with episode title information (not file drops)
-            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
-            {
-                dropEnabled = true;
-            }
-
-            if(!dropEnabled)
-            {
-                e.Effects = DragDropEffects.None;
-                e.Handled = true;
-            }
-        }
-
-        private void txtFileTitle_Drop(object sender, DragEventArgs e)
-        {
-            //  We need to check for the correct data format.  We want to
-            //  allow updating titles with episode title information (not file drops)
-            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
-            {
-                var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
-                TextBlock text = (TextBlock)sender;
-                text.Text = data.Name;
-            }
-        }
-
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
             //  Check status of fileItems
@@ -182,12 +190,17 @@ namespace TVTagHelper
             //  allow updating titles with episode title information (not file drops)
             if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
             {
-                dropEnabled = true;
-
-                //  Select the item and scroll it into view:
                 DataGridRow r = (DataGridRow)sender;
-                filesDataGrid.SelectedItem = r.Item;
-                filesDataGrid.ScrollIntoView(r.Item);
+
+                //  Make sure there is FileItem data there...
+                if(r != null && r.Item.GetType() == typeof(FileItem))
+                {
+                    dropEnabled = true;
+
+                    //  Select the item and scroll it into view:                
+                    filesDataGrid.SelectedItem = r.Item;
+                    filesDataGrid.ScrollIntoView(r.Item);
+                }
             }
 
             if(!dropEnabled)
