@@ -11,5 +11,8 @@ namespace TVTagHelper.Models
         public int EpisodeNumber { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string ArtworkUrl { get; set; }
+        public string ShowName { get; set; }
+        public string RunTime { get; set; }
     }
 }

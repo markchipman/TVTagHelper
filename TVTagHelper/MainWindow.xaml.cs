@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,8 +58,8 @@ namespace TVTagHelper
                 //  Group into seasons
                 var seasons = from episode in results.Episodes
                               orderby episode.Number
-                              group episode by episode.SeasonNumber into seasonGroup
-                              orderby seasonGroup.Key
+                              group episode by new { episode.ShowName, episode.SeasonNumber } into seasonGroup
+                              orderby seasonGroup.Key.ShowName, seasonGroup.Key.SeasonNumber
                               select seasonGroup;
 
                 //  Create our structure:
@@ -74,16 +75,26 @@ namespace TVTagHelper
                         //  Create the show result
                         TVShowSeachResult tvResult = new TVShowSeachResult()
                         {
-                            SeasonNumber = seasonGroup.Key
+                            SeasonNumber = seasonGroup.Key.SeasonNumber
                         };
 
+                        //  Get the episode along with its ordinal position
+                        var filteredEpisodesWithPosition = (from episode in filteredEpisodes
+                                                            select episode).Select((episode, index) =>
+                                                            new
+                                                            {
+                                                                Episode = episode,
+                                                                OrdinalPosition = index + 1
+                                                            });
+
                         //  Add the episodes
-                        tvResult.Episodes = (from episode in filteredEpisodes
+                        tvResult.Episodes = (from item in filteredEpisodesWithPosition
                                              select new EpisodeInfo()
                                              {
-                                                 Name = episode.Name,
-                                                 Description = episode.DescriptionShort,
-                                                 EpisodeNumber = episode.Number
+                                                 Name = item.Episode.Name,
+                                                 Description = item.Episode.DescriptionShort,
+                                                 EpisodeNumber = item.OrdinalPosition,
+                                                 RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
                                              }).ToList();
 
                         //  Set the show properties

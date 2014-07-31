@@ -18,9 +18,9 @@
             <Label Margin="0,5,0,5">Drag your files here</Label>
             <DataGrid Name="filesDataGrid" LoadingRow="filesDataGrid_LoadingRow" HorizontalAlignment="Stretch" AllowDrop="True" AutoGenerateColumns="False" SelectionMode="Single" BorderThickness="0" GridLinesVisibility="None">
                 <DataGrid.Columns>
-                    <DataGridTextColumn IsReadOnly="True" Header="File name" Binding="{Binding Path=Title}" />
-                    <DataGridTextColumn IsReadOnly="True" Header="Show name" Binding="{Binding Path=ShowName}" />
-                    <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
+                    <DataGridTextColumn Header="Episode name" Binding="{Binding Path=Title}" />
+                    <DataGridTextColumn Header="Show name" Binding="{Binding Path=ShowName}" />
+                    <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}" />
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>
@@ -66,6 +66,7 @@
                                             <DataGridTextColumn IsReadOnly="True" Header="Ep #" Binding="{Binding Path=EpisodeNumber}" />
                                             <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Name}" />
                                             <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
+                                            <DataGridTextColumn IsReadOnly="True" Header="Time" Binding="{Binding Path=RunTime}" />
                                         </DataGrid.Columns>
                                     </DataGrid>
 
