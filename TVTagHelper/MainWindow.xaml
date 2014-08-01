@@ -26,8 +26,11 @@
                 <Label Margin="0,5,0,5" Content="Drag your files to the list below"/>
                 <DataGrid Name="filesDataGrid" LoadingRow="filesDataGrid_LoadingRow" HorizontalAlignment="Stretch" AllowDrop="True" AutoGenerateColumns="False" SelectionMode="Single" BorderThickness="0" GridLinesVisibility="None">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Episode name" Binding="{Binding Path=Title}" />
                         <DataGridTextColumn Header="Show name" Binding="{Binding Path=ShowName}" />
+                        <DataGridTextColumn Header="Season" Binding="{Binding Path=SeasonNumber}" />
+                        <DataGridTextColumn Header="Episode" Binding="{Binding Path=EpisodeNumber}" />
+                        <DataGridTextColumn Header="Episode name" Binding="{Binding Path=Title}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="Full path" Binding="{Binding Path=FilePath}" />
                         <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}" />
                     </DataGrid.Columns>
                 </DataGrid>

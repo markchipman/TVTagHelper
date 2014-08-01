@@ -28,6 +28,10 @@ namespace TVTagHelper.Models
         #region Changeable properties
 
         private string _title;
+
+        /// <summary>
+        /// The episode title
+        /// </summary>
         public string Title
         {
             get { return _title; }
@@ -35,6 +39,10 @@ namespace TVTagHelper.Models
         }
 
         private string _description;
+
+        /// <summary>
+        /// The episode description
+        /// </summary>
         public string Description
         {
             get { return _description; }
@@ -42,11 +50,48 @@ namespace TVTagHelper.Models
         }
 
         private int _episodeNumber;
+
+        /// <summary>
+        /// The episode number in the season
+        /// </summary>
         public int EpisodeNumber
         {
             get { return _episodeNumber; }
             set { SetField(ref _episodeNumber, value, () => EpisodeNumber); }
-        } 
+        }
+
+        private int _seasonNumber;
+
+        /// <summary>
+        /// The episode number in the season
+        /// </summary>
+        public int SeasonNumber
+        {
+            get { return _seasonNumber; }
+            set { SetField(ref _seasonNumber, value, () => SeasonNumber); }
+        }
+
+        private string _showName;
+
+        /// <summary>
+        /// The TV show name
+        /// </summary>
+        public string ShowName
+        {
+            get { return _showName; }
+            set { SetField(ref _showName, value, () => ShowName); }
+        }
+
+        private long _showId;
+
+        /// <summary>
+        /// The showId
+        /// </summary>
+        public long ShowId
+        {
+            get { return _showId; }
+            set { SetField(ref _showId, value, () => ShowId); }
+        }
 
         #endregion
 

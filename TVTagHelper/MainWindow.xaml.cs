@@ -98,7 +98,9 @@ namespace TVTagHelper
                                                  Name = item.Episode.Name,
                                                  Description = item.Episode.DescriptionShort,
                                                  ShowId = item.Episode.ShowId,
+                                                 ShowName = item.Episode.ShowName,
                                                  EpisodeNumber = item.OrdinalPosition,
+                                                 SeasonNumber = item.Episode.SeasonNumber,
                                                  RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
                                              }).ToList();
 
@@ -236,14 +238,20 @@ namespace TVTagHelper
                 var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
                 FileItem file = (FileItem)filesDataGrid.SelectedItem;
 
+                //  Try to find the item in the backing store:
                 var item = fileItems.FirstOrDefault(f => f.Id == file.Id);
                 if(item != null)
                 {
+                    //  Update properties:
                     item.Title = data.Name;
+                    item.SeasonNumber = data.SeasonNumber;
+                    item.ShowId = data.ShowId;
+                    item.ShowName = data.ShowName;
                     item.Description = data.Description;
                     item.EpisodeNumber = data.EpisodeNumber;
                 }
 
+                //  Save the item in the backing store:
                 var oldindex = fileItems.IndexOf(item);
                 fileItems[oldindex] = item;
             }
