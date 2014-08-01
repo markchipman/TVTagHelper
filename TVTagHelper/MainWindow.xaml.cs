@@ -283,5 +283,13 @@ namespace TVTagHelper
             }
         }
 
+        private void mnuExit_Click(object sender, RoutedEventArgs e)
+        {
+            //  Should we check to see if there is an action in progress first?
+
+            //  Exit the app:
+            Application.Current.Shutdown();
+        }
+
     }
 }
