@@ -291,5 +291,22 @@ namespace TVTagHelper
             Application.Current.Shutdown();
         }
 
+        private void mnuSettings_Click(object sender, RoutedEventArgs e)
+        {
+            //  Show the settings page
+            //  Code taken shamelessly from http://stackoverflow.com/a/6417636/19020
+            SettingsWindow settings = new SettingsWindow()
+            {
+                Title = "Settings",
+                ShowInTaskbar = false,
+                Topmost = true,
+                ResizeMode = System.Windows.ResizeMode.NoResize,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner
+            };
+
+            settings.ShowDialog();
+        }
+
     }
 }

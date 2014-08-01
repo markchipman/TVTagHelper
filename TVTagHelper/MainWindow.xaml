@@ -1,11 +1,11 @@
 ﻿<Window x:Class="TVTagHelper.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TV Tag Helper" Height="350" Width="525">
+        Title="TV Tag Helper" Icon="television.ico" Height="350" Width="525">
     <DockPanel>
         <Menu DockPanel.Dock="Top" Padding="3">
             <MenuItem Header="_File">
-                <MenuItem Header="Settings"/>
+                <MenuItem Name="mnuSettings" Header="Settings" Click="mnuSettings_Click"/>
                 <Separator />
                 <MenuItem Name="mnuExit" Header="Exit" Click="mnuExit_Click"/>
             </MenuItem>
@@ -23,7 +23,7 @@
 
             <!-- File drag/drop -->
             <StackPanel Grid.Column="0">
-                <Label Margin="0,5,0,5">Drag your files here</Label>
+                <Label Margin="0,5,0,5" Content="Drag your files to the list below"/>
                 <DataGrid Name="filesDataGrid" LoadingRow="filesDataGrid_LoadingRow" HorizontalAlignment="Stretch" AllowDrop="True" AutoGenerateColumns="False" SelectionMode="Single" BorderThickness="0" GridLinesVisibility="None">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Episode name" Binding="{Binding Path=Title}" />
