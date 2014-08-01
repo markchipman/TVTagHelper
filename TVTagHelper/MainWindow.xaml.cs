@@ -42,12 +42,6 @@ namespace TVTagHelper
         {
             InitializeComponent();
 
-            /*
-            fileItems.Add(new FileItem() { Title = "Complete this WPF tutorial"});
-            fileItems.Add(new FileItem() { Title = "Learn C#"});
-            fileItems.Add(new FileItem() { Title = "Wash the car"});
-            */
-
             filesDataGrid.ItemsSource = fileItems;
             searchResults.ItemsSource = tvShows;
         }
