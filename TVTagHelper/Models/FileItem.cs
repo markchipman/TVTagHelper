@@ -15,28 +15,40 @@ namespace TVTagHelper.Models
             this.Id = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// The id of the item.  This won't change once set
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// The file path of the item.  This won't change once set
+        /// </summary>
+        public string FilePath { get; set; }
+
+        #region Changeable properties
+
         private string _title;
-        public string Title 
-        { 
+        public string Title
+        {
             get { return _title; }
             set { SetField(ref _title, value, () => Title); }
         }
 
         private string _description;
         public string Description
-        { 
+        {
             get { return _description; }
             set { SetField(ref _description, value, () => Description); }
         }
 
         private int _episodeNumber;
         public int EpisodeNumber
-        { 
+        {
             get { return _episodeNumber; }
             set { SetField(ref _episodeNumber, value, () => EpisodeNumber); }
-        }
+        } 
 
-        public Guid Id { get; set; }
+        #endregion
 
         #region INotifyPropertyChanged Members & helpers
 

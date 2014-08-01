@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,6 +22,11 @@ namespace TVTagHelper
     {
         ObservableCollection<FileItem> fileItems = new ObservableCollection<FileItem>();
         ObservableCollection<TVShowSeachResult> tvShows = new ObservableCollection<TVShowSeachResult>();
+        
+        /// <summary>
+        /// Allowed video file extensions (for drop)
+        /// </summary>
+        private List<string> allowedExtensions = new List<string>() { ".mp4", ".m4v" };
         
         /// <summary>
         /// The iTunes search manager
@@ -186,8 +192,8 @@ namespace TVTagHelper
         {
             bool dropEnabled = false;
 
-            //  We need to check for the correct data format.  We want to
-            //  allow updating titles with episode title information (not file drops)
+            //  If it's episode information, we need to check the data under
+            //  the drag over location...
             if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
             {
                 DataGridRow r = (DataGridRow)sender;
@@ -203,6 +209,23 @@ namespace TVTagHelper
                 }
             }
 
+            //  If it's a new file it's OK to drop (but it will end up adding
+            //  to the list)
+            if(e.Data.GetDataPresent(DataFormats.FileDrop, true))
+            {
+                string[] filenames = e.Data.GetData(DataFormats.FileDrop, true) as string[];
+
+                foreach(string filename in filenames)
+                {
+                    if(allowedExtensions.Contains(Path.GetExtension(filename).ToLowerInvariant()))
+                    {
+                        //  we have at least one video file
+                        dropEnabled = true;
+                        break;
+                    }
+                }
+            }
+
             if(!dropEnabled)
             {
                 e.Effects = DragDropEffects.None;
@@ -214,7 +237,7 @@ namespace TVTagHelper
         {
             //  We need to check for the correct data format.  We want to
             //  allow updating titles with episode title information (not file drops)
-            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true))
+            if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true) && filesDataGrid.SelectedItem != null)
             {
                 var data = (EpisodeInfo)e.Data.GetData(typeof(EpisodeInfo));
                 FileItem file = (FileItem)filesDataGrid.SelectedItem;
@@ -229,6 +252,34 @@ namespace TVTagHelper
 
                 var oldindex = fileItems.IndexOf(item);
                 fileItems[oldindex] = item;
+            }
+
+            //  If it's a file drop, let's get any videos not already added
+            //  and add them to our list:
+            if(e.Data.GetDataPresent(DataFormats.FileDrop, true))
+            {
+                string[] filenames = e.Data.GetData(DataFormats.FileDrop, true) as string[];
+
+                foreach(string filename in filenames)
+                {
+                    if(allowedExtensions.Contains(Path.GetExtension(filename).ToLowerInvariant()))
+                    {
+                        //  Check to see if the path of the video exists...
+                        var existingItems = from item in fileItems
+                                            where item.FilePath.Equals(filename)
+                                            select item;
+
+                        if(!existingItems.Any())
+                        {
+                            //  If it doesn't, add it:
+                            fileItems.Add(new FileItem()
+                                {
+                                    FilePath = filename,
+                                    Title = Path.GetFileNameWithoutExtension(filename)
+                                });
+                        }
+                    }
+                }
             }
         }
 
