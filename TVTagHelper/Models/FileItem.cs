@@ -31,9 +31,9 @@ namespace TVTagHelper.Models
         public string Rating { get; set; }
 
         /// <summary>
-        /// The ShowId for the show.  Used for artwork lookup
+        /// The SeasonId for the show.  Used for artwork lookup
         /// </summary>
-        public long ShowId { get; set; }
+        public long SeasonId { get; set; }
 
         #region Changeable properties
 

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,85 +41,93 @@ namespace TVTagHelper
         /// </summary>
         private ConcurrentDictionary<long, string> seasonArtworkCache = new ConcurrentDictionary<long, string>();
 
+        /// <summary>
+        /// The location of the currently executing assembly
+        /// </summary>
+        private string currentPath = string.Empty;
+
+        /// <summary>
+        /// The location of the artwork cache
+        /// </summary>
+        private string artworkCachePath = string.Empty;
+
         public MainWindow()
         {
             InitializeComponent();
 
             filesDataGrid.ItemsSource = fileItems;
             searchResults.ItemsSource = tvShows;
+            currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            artworkCachePath = Path.Combine(currentPath, "ArtworkCache");
         }
 
-        private void cmdSearch_Click(object sender, RoutedEventArgs e)
+        private async void cmdSearch_Click(object sender, RoutedEventArgs e)
         {
             cmdSearch.IsEnabled = false;
-            
-            Task<TVEpisodeListResult> searchTask = iTunes.GetTVEpisodesForShow(txtSearch.Text, 500);
-            searchTask.ContinueWith((t) =>
+
+            //  Get the results
+            TVEpisodeListResult results = await iTunes.GetTVEpisodesForShow(txtSearch.Text, 500);
+
+            //  Clear our tvshows observable:
+            tvShows.Clear();
+
+            //  Group into seasons
+            var seasons = from episode in results.Episodes
+                          orderby episode.Number
+                          group episode by new { episode.ShowName, episode.SeasonNumber } into seasonGroup
+                          orderby seasonGroup.Key.ShowName, seasonGroup.Key.SeasonNumber
+                          select seasonGroup;
+
+            //  Create our structure:
+            foreach(var seasonGroup in seasons)
             {
-                //  Clear our tvshows observable:
-                tvShows.Clear();
+                //  Filter our episodes:
+                var filteredEpisodes = from episode in seasonGroup
+                                       where episode.PriceHD > 0
+                                       select episode;
 
-                //  Get the results
-                var results = t.Result;
-
-                //  Group into seasons
-                var seasons = from episode in results.Episodes
-                              orderby episode.Number
-                              group episode by new { episode.ShowName, episode.SeasonNumber } into seasonGroup
-                              orderby seasonGroup.Key.ShowName, seasonGroup.Key.SeasonNumber
-                              select seasonGroup;
-
-                //  Create our structure:
-                foreach(var seasonGroup in seasons)
+                if(filteredEpisodes.Any())
                 {
-                    //  Filter our episodes:
-                    var filteredEpisodes = from episode in seasonGroup
-                                    where episode.PriceHD > 0
-                                    select episode;
-
-                    if(filteredEpisodes.Any())
+                    //  Create the show result
+                    TVShowSeachResult tvResult = new TVShowSeachResult()
                     {
-                        //  Create the show result
-                        TVShowSeachResult tvResult = new TVShowSeachResult()
-                        {
-                            SeasonNumber = seasonGroup.Key.SeasonNumber
-                        };
+                        SeasonNumber = seasonGroup.Key.SeasonNumber
+                    };
 
-                        //  Get the episode along with its ordinal position
-                        var filteredEpisodesWithPosition = (from episode in filteredEpisodes
-                                                            select episode).Select((episode, index) =>
-                                                            new
-                                                            {
-                                                                Episode = episode,
-                                                                OrdinalPosition = index + 1
-                                                            });
+                    //  Get the episode along with its ordinal position
+                    var filteredEpisodesWithPosition = (from episode in filteredEpisodes
+                                                        select episode).Select((episode, index) =>
+                                                        new
+                                                        {
+                                                            Episode = episode,
+                                                            OrdinalPosition = index + 1
+                                                        });
 
-                        //  Add the episodes
-                        tvResult.Episodes = (from item in filteredEpisodesWithPosition
-                                             select new EpisodeInfo()
-                                             {
-                                                 Name = item.Episode.Name,
-                                                 Description = item.Episode.DescriptionShort,
-                                                 ShowId = item.Episode.ShowId,
-                                                 ShowName = item.Episode.ShowName,
-                                                 EpisodeNumber = item.OrdinalPosition,
-                                                 SeasonNumber = item.Episode.SeasonNumber,
-                                                 Rating = item.Episode.Rating,
-                                                 RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
-                                             }).ToList();
+                    //  Add the episodes
+                    tvResult.Episodes = (from item in filteredEpisodesWithPosition
+                                         select new EpisodeInfo()
+                                         {
+                                             Name = item.Episode.Name,
+                                             Description = item.Episode.DescriptionShort,
+                                             ShowId = item.Episode.ShowId,
+                                             SeasonId = item.Episode.SeasonId,
+                                             ShowName = item.Episode.ShowName,
+                                             EpisodeNumber = item.OrdinalPosition,
+                                             SeasonNumber = item.Episode.SeasonNumber,
+                                             Rating = item.Episode.Rating,
+                                             RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
+                                         }).ToList();
 
-                        //  Set the show properties
-                        tvResult.ArtworkUrl = filteredEpisodes.First().ArtworkUrl;
-                        tvResult.ShowName = filteredEpisodes.First().ShowName;
+                    //  Set the show properties
+                    tvResult.ArtworkUrl = filteredEpisodes.First().ArtworkUrl;
+                    tvResult.ShowName = filteredEpisodes.First().ShowName;
 
-                        //  Add the result to the list:
-                        tvShows.Add(tvResult);
-                    }
+                    //  Add the result to the list:
+                    tvShows.Add(tvResult);
                 }
+            }
 
-                cmdSearch.IsEnabled = true;
-            },
-            TaskScheduler.FromCurrentSynchronizationContext());
+            cmdSearch.IsEnabled = true;
         }
 
         /// <summary>
@@ -125,34 +135,48 @@ namespace TVTagHelper
         /// </summary>
         /// <param name="seasonId"></param>
         /// <returns></returns>
-        private string GetLargeArtworkForSeasonId(long seasonId)
+        private async Task<string> GetLargeArtworkForSeasonId(long seasonId)
         {
             string retval = string.Empty;
 
             //  If we don't have it in cache, get it in cache
             if(!seasonArtworkCache.ContainsKey(seasonId))
             {
-                Task<TVSeasonListResult> lookupTask = iTunes.GetTVSeasonById(seasonId);
-                lookupTask.ContinueWith((t) =>
+                TVSeasonListResult result = await iTunes.GetTVSeasonById(seasonId);
+                
+                //  If we got results back...
+                if(result.Seasons.Any())
                 {
-                    //  If we got results back...
-                    if(t.Result.Seasons.Any())
-                    {
-                        //  Make sure the artwork cache directory exists:
-                        
+                    //  Make sure the artwork cache directory exists:
+                    if(!Directory.Exists(artworkCachePath))
+                        Directory.CreateDirectory(artworkCachePath);
 
-                        //  Save the artwork to the cache directory:
-                        string artworkUrl = t.Result.Seasons.First().ArtworkUrlLarge;
+                    //  Get information about the artwork
+                    var showInfo = result.Seasons.First();
+                    Uri uri = new Uri(showInfo.ArtworkUrlLarge);
+                    string artworkExtension = Path.GetExtension(uri.LocalPath);
 
-                        //  Store the item in the cache:
-                        seasonArtworkCache.AddOrUpdate(seasonId, artworkUrl, (key, oldValue) => artworkUrl );
-                    }
-                }, 
-                TaskScheduler.FromCurrentSynchronizationContext());
+                    //  Get our target filename and save the artwork to the cache directory:
+                    string savedArtworkPath = Path.Combine(artworkCachePath,
+                        string.Format("{0}_S{1}{2}", showInfo.ShowName, showInfo.SeasonNumber, artworkExtension)
+                        );
+
+                    WebClient web = new WebClient();
+                    web.DownloadFile(showInfo.ArtworkUrlLarge, savedArtworkPath);
+
+                    //  Store the item in the cache:
+                    seasonArtworkCache.AddOrUpdate(seasonId, savedArtworkPath, (key, oldValue) => savedArtworkPath);
+                }
+
             }
 
             //  Return it from cache:
-            retval = seasonArtworkCache[seasonId];
+            try
+            {
+                retval = seasonArtworkCache[seasonId];
+            }
+            catch(Exception)
+            { }
 
             return retval;
         }
@@ -180,7 +204,7 @@ namespace TVTagHelper
             }
         }
 
-        private void btnUpdate_Click(object sender, RoutedEventArgs e)
+        private async void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
             //  For each of the items
             for(int i = fileItems.Count - 1; i >= 0; i--)
@@ -190,13 +214,13 @@ namespace TVTagHelper
                 if(!string.IsNullOrWhiteSpace(item.ShowName))
                 {
                     //  Get the artwork path for the showId:
-
+                    string artworkPath = await GetLargeArtworkForSeasonId(item.SeasonId);
 
                     //  Set the meta information
                     MetadataManager.SetTVMetaData(item.FilePath, new TVMetadata()
                     {
                         ShowRating = item.Rating,
-                        /* Need to add artwork */
+                        ShowArtworkPath = artworkPath,
                         ShowName = item.ShowName,
                         ShowSeason = item.SeasonNumber,
                         EpisodeTitle = item.Title,
@@ -283,7 +307,7 @@ namespace TVTagHelper
                     item.Rating = data.Rating;
                     item.Title = data.Name;
                     item.SeasonNumber = data.SeasonNumber;
-                    item.ShowId = data.ShowId;
+                    item.SeasonId = data.SeasonId;
                     item.ShowName = data.ShowName;
                     item.Description = data.Description;
                     item.EpisodeNumber = data.EpisodeNumber;

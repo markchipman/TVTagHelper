@@ -14,6 +14,7 @@ namespace TVTagHelper.Models
         public string Description { get; set; }
         public string ShowName { get; set; }
         public long ShowId { get; set; }
+        public long SeasonId { get; set; }
         public string RunTime { get; set; }
         public string Rating { get; set; }
 
