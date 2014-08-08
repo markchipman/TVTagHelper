@@ -25,6 +25,16 @@ namespace TVTagHelper.Models
         /// </summary>
         public string FilePath { get; set; }
 
+        /// <summary>
+        /// Go with whatever iTunes finds here
+        /// </summary>
+        public string Rating { get; set; }
+
+        /// <summary>
+        /// The ShowId for the show.  Used for artwork lookup
+        /// </summary>
+        public long ShowId { get; set; }
+
         #region Changeable properties
 
         private string _title;
@@ -80,17 +90,6 @@ namespace TVTagHelper.Models
         {
             get { return _showName; }
             set { SetField(ref _showName, value, () => ShowName); }
-        }
-
-        private long _showId;
-
-        /// <summary>
-        /// The showId
-        /// </summary>
-        public long ShowId
-        {
-            get { return _showId; }
-            set { SetField(ref _showId, value, () => ShowId); }
         }
 
         #endregion

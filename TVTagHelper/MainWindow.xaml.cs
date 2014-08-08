@@ -11,6 +11,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using iTunesSearch.Library;
 using iTunesSearch.Library.Models;
+using iTunesTVMetadata.Library;
 using TVTagHelper.Models;
 
 namespace TVTagHelper
@@ -101,6 +102,7 @@ namespace TVTagHelper
                                                  ShowName = item.Episode.ShowName,
                                                  EpisodeNumber = item.OrdinalPosition,
                                                  SeasonNumber = item.Episode.SeasonNumber,
+                                                 Rating = item.Episode.Rating,
                                                  RunTime = TimeSpan.FromMilliseconds(Convert.ToDouble(item.Episode.RuntimeInMilliseconds)).ConciseFormat()
                                              }).ToList();
 
@@ -136,7 +138,13 @@ namespace TVTagHelper
                     //  If we got results back...
                     if(t.Result.Seasons.Any())
                     {
+                        //  Make sure the artwork cache directory exists:
+                        
+
+                        //  Save the artwork to the cache directory:
                         string artworkUrl = t.Result.Seasons.First().ArtworkUrlLarge;
+
+                        //  Store the item in the cache:
                         seasonArtworkCache.AddOrUpdate(seasonId, artworkUrl, (key, oldValue) => artworkUrl );
                     }
                 }, 
@@ -174,8 +182,34 @@ namespace TVTagHelper
 
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
-            //  Check status of fileItems
-            int test = fileItems.Count;
+            //  For each of the items
+            for(int i = fileItems.Count - 1; i >= 0; i--)
+            {
+                var item = fileItems[i];
+
+                if(!string.IsNullOrWhiteSpace(item.ShowName))
+                {
+                    //  Get the artwork path for the showId:
+
+
+                    //  Set the meta information
+                    MetadataManager.SetTVMetaData(item.FilePath, new TVMetadata()
+                    {
+                        ShowRating = item.Rating,
+                        /* Need to add artwork */
+                        ShowName = item.ShowName,
+                        ShowSeason = item.SeasonNumber,
+                        EpisodeTitle = item.Title,
+                        EpisodeDescription = item.Description,
+                        EpisodeNumber = item.EpisodeNumber
+                    });
+                }
+
+                fileItems.RemoveAt(i);
+            }
+
+            //  Indicate that the process completed
+            lblStatus.Visibility = System.Windows.Visibility.Visible;
         }
 
         private void filesDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
@@ -231,6 +265,9 @@ namespace TVTagHelper
 
         private void fileRow_Drop(object sender, DragEventArgs e)
         {
+            //  Reset the status indicator
+            lblStatus.Visibility = System.Windows.Visibility.Hidden;
+
             //  We need to check for the correct data format.  We want to
             //  allow updating titles with episode title information (not file drops)
             if(e.Data.GetDataPresent("TVTagHelper.Models.EpisodeInfo", true) && filesDataGrid.SelectedItem != null)
@@ -243,6 +280,7 @@ namespace TVTagHelper
                 if(item != null)
                 {
                     //  Update properties:
+                    item.Rating = data.Rating;
                     item.Title = data.Name;
                     item.SeasonNumber = data.SeasonNumber;
                     item.ShowId = data.ShowId;

@@ -15,6 +15,7 @@ namespace TVTagHelper.Models
         public string ShowName { get; set; }
         public long ShowId { get; set; }
         public string RunTime { get; set; }
+        public string Rating { get; set; }
 
         //  Need to make this a lazy lookup to get artwork based on
         //  showId (because it's higher quality artwork)

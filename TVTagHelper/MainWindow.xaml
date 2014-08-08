@@ -89,8 +89,9 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Background="LightGray">
+            <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="3" Background="LightGray">
                 <Button Name="btnUpdate" Click="btnUpdate_Click" HorizontalAlignment="Left" Margin="5" Padding="15,5">Update tags</Button>
+                <Label Name="lblStatus" Padding="10,7" Margin="5" Foreground="Green" Visibility="Hidden">Files updated.</Label>
             </StackPanel>
 
         </Grid>
