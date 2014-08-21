@@ -335,11 +335,15 @@ namespace TVTagHelper
 
                         if(!existingItems.Any())
                         {
+                            //  Get the video length:
+                            string videoLength = TimeSpan.FromSeconds(MetadataManager.GetVideoLengthInSeconds(filename)).ConciseFormat();
+
                             //  If it doesn't, add it:
                             fileItems.Add(new FileItem()
                                 {
                                     FilePath = filename,
-                                    Title = Path.GetFileNameWithoutExtension(filename)
+                                    Title = Path.GetFileNameWithoutExtension(filename),
+                                    RunTime = videoLength
                                 });
                         }
                     }

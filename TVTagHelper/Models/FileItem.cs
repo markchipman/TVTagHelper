@@ -31,6 +31,11 @@ namespace TVTagHelper.Models
         public string Rating { get; set; }
 
         /// <summary>
+        /// The runtime (in minutes and seconds)
+        /// </summary>
+        public string RunTime { get; set; }
+
+        /// <summary>
         /// The SeasonId for the show.  Used for artwork lookup
         /// </summary>
         public long SeasonId { get; set; }

@@ -30,6 +30,7 @@
                         <DataGridTextColumn Header="Season" Binding="{Binding Path=SeasonNumber}" />
                         <DataGridTextColumn Header="Episode" Binding="{Binding Path=EpisodeNumber}" />
                         <DataGridTextColumn Header="Episode name" Binding="{Binding Path=Title}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="Video time" Binding="{Binding Path=RunTime}" />
                         <DataGridTextColumn IsReadOnly="True" Header="Full path" Binding="{Binding Path=FilePath}" />
                         <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}" />
                     </DataGrid.Columns>
