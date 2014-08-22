@@ -77,8 +77,8 @@
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn IsReadOnly="True" Header="Ep #" Binding="{Binding Path=EpisodeNumber}" />
                                                 <DataGridTextColumn IsReadOnly="True" Header="Episode name" Binding="{Binding Path=Name}" />
-                                                <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
                                                 <DataGridTextColumn IsReadOnly="True" Header="Time" Binding="{Binding Path=RunTime}" />
+                                                <DataGridTextColumn IsReadOnly="True" Header="Description" Binding="{Binding Path=Description}" />
                                             </DataGrid.Columns>
                                         </DataGrid>
 
