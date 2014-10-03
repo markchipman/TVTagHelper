@@ -59,6 +59,14 @@ namespace TVTagHelper
             searchResults.ItemsSource = tvShows;
             currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             artworkCachePath = Path.Combine(currentPath, "ArtworkCache");
+            InitCountryDropdown();
+        }
+
+        private void InitCountryDropdown()
+        { 
+            List<string> countries = new List<string>(new string[] {"AU", "US"});
+            lstCountries.ItemsSource = countries;
+            lstCountries.SelectedValue = "US";
         }
 
         private async void cmdSearch_Click(object sender, RoutedEventArgs e)
@@ -66,7 +74,7 @@ namespace TVTagHelper
             cmdSearch.IsEnabled = false;
 
             //  Get the results
-            TVEpisodeListResult results = await iTunes.GetTVEpisodesForShow(txtSearch.Text, 500);
+            TVEpisodeListResult results = await iTunes.GetTVEpisodesForShow(txtSearch.Text, 500, lstCountries.SelectedValue.ToString().ToLower());
 
             //  Clear our tvshows observable:
             tvShows.Clear();
@@ -83,7 +91,7 @@ namespace TVTagHelper
             {
                 //  Filter our episodes:
                 var filteredEpisodes = from episode in seasonGroup
-                                       where episode.PriceHD > 0
+                                       where episode.Price > 0
                                        select episode;
 
                 if(filteredEpisodes.Any())
@@ -108,7 +116,7 @@ namespace TVTagHelper
                                          select new EpisodeInfo()
                                          {
                                              Name = item.Episode.Name,
-                                             Description = item.Episode.DescriptionShort,
+                                             Description = item.Episode.DescriptionLong,
                                              ShowId = item.Episode.ShowId,
                                              SeasonId = item.Episode.SeasonId,
                                              ShowName = item.Episode.ShowName,

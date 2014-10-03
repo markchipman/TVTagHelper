@@ -49,6 +49,7 @@
                     <DockPanel FocusManager.FocusedElement="{Binding ElementName=txtSearch}">
                         <Label Margin="0,5,0,5" DockPanel.Dock="Left">TV Show:</Label>
                         <Button Name="cmdSearch" Margin="0,5,5,5" Padding="10,0" DockPanel.Dock="Right" IsDefault="True" Click="cmdSearch_Click">Search</Button>
+                        <ComboBox Name="lstCountries"  Margin="5,5,5,5" />
                         <TextBox Name="txtSearch" Margin="5,5,5,5"></TextBox>
                     </DockPanel>
                     <ItemsControl Name="searchResults" HorizontalContentAlignment="Stretch" Margin="5">
