@@ -36,9 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="iTunesSearch.Library, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\iTunesSearch.1.0.14.0\lib\net45\iTunesSearch.Library.dll</HintPath>
+    <Reference Include="iTunesSearch.Library, Version=1.0.27.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTunesSearch.1.0.27\lib\net45\iTunesSearch.Library.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="iTunesTVMetadata.Library">
       <HintPath>..\packages\iTunesMetadata.1.0.10.0\lib\net45\iTunesTVMetadata.Library.dll</HintPath>
