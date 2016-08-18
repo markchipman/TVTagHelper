@@ -169,8 +169,12 @@ namespace TVTagHelper
                         string.Format("{0}_S{1}{2}", showInfo.ShowName, showInfo.SeasonNumber, artworkExtension)
                         );
 
-                    WebClient web = new WebClient();
-                    web.DownloadFile(showInfo.ArtworkUrlLarge, savedArtworkPath);
+                    //  If the file doesn't seem to exist on disk, go fetch it:
+                    if(!File.Exists(savedArtworkPath))
+                    {
+                        WebClient web = new WebClient();
+                        web.DownloadFile(showInfo.ArtworkUrlLarge, savedArtworkPath);
+                    }
 
                     //  Store the item in the cache:
                     seasonArtworkCache.AddOrUpdate(seasonId, savedArtworkPath, (key, oldValue) => savedArtworkPath);
@@ -235,6 +239,9 @@ namespace TVTagHelper
                         EpisodeDescription = item.Description,
                         EpisodeNumber = item.EpisodeNumber
                     });
+
+                    //  Rename to use the SXXEXX naming convention for Plex (doesn't hurt iTunes)
+                    File.Move(item.FilePath, string.Format("{0}\\S{1:D2}E{2:D2} - {3}", Path.GetDirectoryName(item.FilePath), item.SeasonNumber, item.EpisodeNumber, Path.GetFileName(item.FilePath)));
                 }
 
                 fileItems.RemoveAt(i);
